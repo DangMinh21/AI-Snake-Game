@@ -180,6 +180,3 @@ def train(retrain = False):
     #     _, done, _ = game.play_step(Action.straight)
     #     if done:
     #         break
-
-
-    
