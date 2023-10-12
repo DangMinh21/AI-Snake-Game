@@ -161,22 +161,5 @@ class SnakeGame:
         return wall
 
 
-def play():
-    # create a snake game object
-    game = SnakeGame()
-
-    # play snake game
-    while(True):
-        game_over, score = game.play_step()
-
-        if game_over == True:
-            break
-
-    print(f"Score: {score}")
-
-    # quit game
-    pygame.quit()
-
-
-if __name__ == "__main__":
-    play()
+# if __name__ == "__main__":
+#     play()

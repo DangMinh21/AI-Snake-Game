@@ -12,6 +12,8 @@ BATCH_SIZE = 1000
 LR = 0.001
 GAMMA = 0.9
 RANDOM_FIX = 5
+MODEL_PATH = 'model/model.pth'
+
 
 class Agent:
     def __init__(self, retrain = False, file_path='') -> None:
@@ -20,16 +22,18 @@ class Agent:
         self.retrain = retrain
         self.file_path = file_path
         self.memory = deque(maxlen = MEMORY_SIZE)
-        self.model = self.load_model()
+        self.model = self._load_model()
         self.trainer = QNetTrainer(model=self.model, lr=LR, gamma=GAMMA)
 
-    def load_model(self):
+
+    def _load_model(self):
         model = LinearQNet(11, 256, 3)
         if self.retrain:
             print(f'LOAD MODEL')
             model.load_state_dict(torch.load(self.file_path))
             model.train()
         return model
+
 
     def get_state(self, game: SnakeGame):
         """
@@ -81,6 +85,7 @@ class Agent:
 
         return np.concatenate((danger, direction, food_location), axis=None)
 
+
     # get the action that agent choose: trade off between exploration and exploitation
     def get_action(self, state):
         actions = ['straight', 'right', 'left']
@@ -100,28 +105,6 @@ class Agent:
         predicted_move = self.model(state)
         move = predicted_move.argmax().item()
         return Action[actions[move]]
-        
-
-
-        # if self.n_games < 80:
-        #     if random.randint(0, 200) < self.epsilon:
-        #         move  = random.randint(0, 2)
-        #         return Action[actions[move]]
-        #     else:
-        #         state = torch.tensor(state, dtype=torch.float)
-        #         predicted_move = self.model(state)
-        #         move = predicted_move.argmax().item()
-        #         return Action[actions[move]]
-
-        # else:
-        #     if random.randint(0, 100) < RANDOM_FIX:
-        #         move  = random.randint(0, 2)
-        #         return Action[actions[move]]
-        #     else:
-        #         state = torch.tensor(state, dtype=torch.float)
-        #         predicted_move = self.model(state)
-        #         move = predicted_move.argmax().item()
-        #         return Action[actions[move]]
 
 
     def remember(self, current_state, action, next_state, reward, done):
@@ -140,13 +123,17 @@ class Agent:
         current_states, actions, next_states, rewards, dones = zip(*mini_sample)
         self.trainer.train(current_states, actions, next_states, rewards, dones)
 
+
 def train(retrain = False):
+        # save data to plot
         plot_scores = []
         plot_mean_scores = []
-        total_score = 0
 
-        model_path = 'model/model.pth'
+        
+        total_score = 0
         record = 0
+        model_path = MODEL_PATH
+
         agent = Agent(retrain, file_path=model_path)
         game = SnakeGame()
 
@@ -185,30 +172,8 @@ def train(retrain = False):
                 game.reset()
                 
 
-def Agent_play_snake():
-    # 1. create game
-    game = SnakeGame()
 
-    # 2. Agent
-    agent = Agent(retrain=True, file_path='model/model.pth')
-    while True:
-            # 1. get current state
-            current_state = agent.get_state(game)
-
-            # 2. get action
-            action = agent.get_action(current_state)
-
-            # 3. get next state
-            _, done, score = game.play_step(action)
-
-            print(f"Game: {agent.n_games} - Score: {score}")
-
-            if done:
-                break
-
-
-if __name__ == "__main__":
-    Agent_play_snake()
+# if __name__ == "__main__":
     # train(retrain=True)
     # game = SnakeGame()
     # while True:
